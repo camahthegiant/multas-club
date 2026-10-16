@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Siempre oscuro: colores del club (verde/negro), sin alternar con el
+   esquema del sistema — a diferencia de Gast-On, aquí no hay modo claro. */
+:root {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --club-green: #1b6e4a;
+  --club-green-bright: #2f9e5d;
+  --club-yellow: #e8d522;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-club-green: var(--club-green);
+  --color-club-green-bright: var(--club-green-bright);
+  --color-club-yellow: var(--club-yellow);
+  --font-display: var(--font-oswald);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 110s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-spin-slow {
+    animation: none;
+  }
+}
+
+/* Brillo sutil al pasar el ratón sobre una carta de jugador, tipo FIFA. */
+@keyframes carta-shine {
+  from {
+    transform: translateX(-120%) rotate(20deg);
+  }
+  to {
+    transform: translateX(120%) rotate(20deg);
+  }
+}
+
+.carta-brillo::after {
+  content: "";
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(
+    75deg,
+    transparent 40%,
+    rgb(255 255 255 / 0.12) 50%,
+    transparent 60%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.group:hover .carta-brillo::after {
+  opacity: 1;
+  animation: carta-shine 1.1s ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .carta-brillo::after {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Zoom de entrada al abrir el detalle de un jugador: la carta y el panel
+   aparecen agrandándose ligeramente, como si la carta pinchada se acercara. */
+@keyframes zoom-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-zoom-in {
+  animation: zoom-in 0.2s ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-zoom-in,
+  .animate-fade-in {
+    animation: none;
+  }
+}

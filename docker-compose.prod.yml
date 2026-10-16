@@ -1,0 +1,63 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      SECRET_KEY: ${SECRET_KEY}
+      ENVIRONMENT: production
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET}
+      UPLOADS_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.multas-backend.rule=Host(`multas.example.com`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`))"
+      - "traefik.http.routers.multas-backend.entrypoints=https"
+      - "traefik.http.routers.multas-backend.tls=true"
+      - "traefik.http.routers.multas-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.multas-backend.priority=10"
+      - "traefik.http.services.multas-backend.loadbalancer.server.port=8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.multas-frontend.rule=Host(`multas.example.com`)"
+      - "traefik.http.routers.multas-frontend.entrypoints=https"
+      - "traefik.http.routers.multas-frontend.tls=true"
+      - "traefik.http.routers.multas-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.multas-frontend.priority=1"
+      - "traefik.http.services.multas-frontend.loadbalancer.server.port=3000"
+
+volumes:
+  postgres_data:
+  uploads_data:

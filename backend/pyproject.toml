@@ -1,0 +1,48 @@
+[project]
+name = "multas-backend"
+version = "0.1.0"
+description = "Multas — control de sanciones internas del Club de Rugby Castelló"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi==0.115.6",
+    "uvicorn[standard]==0.32.1",
+    "sqlalchemy==2.0.36",
+    "alembic==1.14.0",
+    # SQLAlchemy 2.1 cambió el driver por defecto de una URL "postgresql://"
+    # sin sufijo, de psycopg2 a psycopg (v3) — tumbó Gast-On en producción
+    # (2026-09-25). Se fijan ambos paquetes y versiones exactas aquí para no
+    # depender de qué resuelva un build sin lockfile.
+    "psycopg2-binary==2.9.10",
+    "psycopg[binary]==3.2.3",
+    "pydantic[email]==2.10.3",
+    "pydantic-settings==2.6.1",
+    "PyJWT[crypto]==2.10.1",
+    "slowapi==0.1.9",
+    "bcrypt==4.2.1",
+    "python-multipart==0.0.17",
+    "Pillow==11.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.4",
+    "ruff==0.8.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
